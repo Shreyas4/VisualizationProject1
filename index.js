@@ -2,14 +2,60 @@ function arrayAverage(arr){
     //Find the sum
     var sum = 0;
     for(var i in arr) {
-        sum += parseFloat(arr[i]);
+        sum += parseFloat(i);
     }
     var numbersCnt = arr.length;
     return (sum / numbersCnt);
 }
 
+var cols = {
+    'State':'State',
+    'County':'County',
+    'Year':'Year',
+    'NO2_Mean':'Mean NO2 value',
+    'NO2_1st_Max_Value':'Maximum NO2 value /day',
+    'NO2_1st_Max_Hour':'Hour of maximum NO2 /day',
+    'NO2_AQI':'NO2 Air Quality Index',
+    'O3_Mean':'Mean O3 value',
+    'O3_1st_Max_Value':'Maximum O3 value /day',
+    'O3_1st_Max_Hour':'Hour of maximum O3 /day',
+    'O3_AQI':'O3 Air Quality Index',
+    'SO2_Mean':'Mean O3 value',
+    'SO2_1st_Max_Value':'Maximum O3 value /day',
+    'SO2_1st_Max_Hour':'Hour of maximum O3 /day',
+    'SO2_AQI':'SO2 Air Quality Index',
+    'CO_Mean':'Mean O3 value',
+    'CO_1st_Max_Value':'Maximum O3 value /day',
+    'CO_1st_Max_Hour':'Hour of maximum O3 /day',
+    'CO_AQI':'CO Air Quality Index',
+    'YPLL Rate':'Years of Potential Life Lost Rate (Age-adjusted per 100,000)',
+    '% Fair/Poor': 'Percent of adults that report fair or poor health',
+    'Physically Unhealthy Days':'Average number of reported physically unhealthy days per month',
+    'TotalPop':'Total Population',
+    'TotalMalePop':'Total Male Population',
+    'TotalFemalePop':'Total Female Population'
+};
+
+const dropdown = d3.select("#container")
+    .insert("select", "svg")
+    .on("change", getDataAndDrawChart);
+
+dropdown.selectAll("option")
+    .data(Object.keys(cols))
+    .enter().append("option")
+    .attr("value", function (d) { return d; })
+    .text(function (d) {
+        return cols[d]; // capitalize 1st letter
+    });
+no2_units = 'Parts per billion';
+o3_units = 'Parts per million';
+co_units = o3_units;
+so2_units = no2_units;
+
+// console.log(Object.keys(cols));
+
 function getDataAndDrawChart() {
-    // d3.select('svg').remove();
+    console.log(`I'm called`);
     d3.selectAll("svg > *").remove();
     var year_select = document.getElementById("year_select");
 
@@ -43,11 +89,9 @@ function getDataAndDrawChart() {
         for (var i=0; i<xLabels.length; i++) {
             my_sample.push({'state':xLabels[i], 'no2_mean':yValues[i]});
         }
-        console.log(my_sample);
         my_sample.sort(function(a, b){return a.no2_mean-b.no2_mean});
         my_sample = my_sample.reverse();
         my_sample = my_sample.slice(0,12);
-        console.log(my_sample);
         yValues = my_sample.map(function (a) {
             return a.no2_mean;
         });
@@ -93,8 +137,6 @@ function getDataAndDrawChart() {
             .call(horizontalLines()
                 .tickSize(-svgWidth, 0, 0)
                 .tickFormat(''));
-
-
 
         const barGroups = chart.selectAll()
             .data(my_sample)
