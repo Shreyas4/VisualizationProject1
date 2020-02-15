@@ -1,13 +1,3 @@
-function arrayAverage(arr){
-    //Find the sum
-    var sum = 0;
-    for(var i in arr) {
-        sum += parseFloat(i);
-    }
-    var numbersCnt = arr.length;
-    return (sum / numbersCnt);
-}
-
 var cols = {
     'State':'State',
     'County':'County',
@@ -36,8 +26,15 @@ var cols = {
     'TotalFemalePop':'Total Female Population'
 };
 
+var categorical = ['State', 'County', 'Year', 'NO2_1st_Max_Hour', 'O3_1st_Max_Hour', 'SO2_1st_Max_Hour', 'CO_1st_Max_Hour'];
+
+var numerical = Object.keys(cols).filter( function( el ) {
+    return !categorical.includes( el );
+} );
+
 const dropdown = d3.select("#container")
     .insert("select", "svg")
+    .attr('id', 'dropdown')
     .on("change", getDataAndDrawChart);
 
 dropdown.selectAll("option")
@@ -45,59 +42,61 @@ dropdown.selectAll("option")
     .enter().append("option")
     .attr("value", function (d) { return d; })
     .text(function (d) {
-        return cols[d]; // capitalize 1st letter
+        return cols[d];
     });
 no2_units = 'Parts per billion';
 o3_units = 'Parts per million';
 co_units = o3_units;
 so2_units = no2_units;
 
-// console.log(Object.keys(cols));
+
 
 function getDataAndDrawChart() {
-    console.log(`I'm called`);
+    var attr_select = document.getElementById("dropdown");
+    var selected_attribute = attr_select.options[attr_select.selectedIndex].value;
     d3.selectAll("svg > *").remove();
-    var year_select = document.getElementById("year_select");
 
-    var selectedYear = year_select.options[year_select.selectedIndex].value;
-    var yValues = [];
-    var xLabels = [];
+    var yList = [];
+    var xList = [];
 
     d3.csv("VisData.csv").then(function (data) {
         var filteredDataByDate = data.filter(function(d, i){
-            if (d['Year'] === selectedYear){
-                return d;
-            }
+            return d[selected_attribute];
         });
 
+
         length = filteredDataByDate.length;
-        var statesMap = {};
+        var dataMap = {};
         for (i=0; i<length; i++){
-            if (!xLabels.includes(filteredDataByDate[i]["State"])){
-                xLabels.push(filteredDataByDate[i]["State"]);
-                statesMap[filteredDataByDate[i]["State"]] = [filteredDataByDate[i]["NO2_Mean"]];
+            if (!xList.includes(filteredDataByDate[i][selected_attribute])){
+                xList.push(filteredDataByDate[i][selected_attribute]);
+                dataMap[filteredDataByDate[i][selected_attribute]] = 1;
             } else {
-                statesMap[filteredDataByDate[i]["State"]].push(filteredDataByDate[i]["NO2_Mean"]);
+                dataMap[filteredDataByDate[i][selected_attribute]]+=1;
             }
         }
-
-        for (var key in statesMap){
-            yValues.push(parseFloat(arrayAverage(statesMap[key]).toFixed(2)));
+        console.log(dataMap);
+        for (var key in dataMap){
+            yList.push(dataMap[key]);
         }
 
         var my_sample = [];
-        for (var i=0; i<xLabels.length; i++) {
-            my_sample.push({'state':xLabels[i], 'no2_mean':yValues[i]});
+        for (var i=0; i<xList.length; i++) {
+            my_sample.push({'selected_attr':xList[i], 'count':yList[i]});
         }
-        my_sample.sort(function(a, b){return a.no2_mean-b.no2_mean});
+        my_sample.sort(function(a, b){return a.count-b.count});
         my_sample = my_sample.reverse();
-        my_sample = my_sample.slice(0,12);
-        yValues = my_sample.map(function (a) {
-            return a.no2_mean;
+        if (my_sample.length >12){
+            my_sample = my_sample.slice(0,12);
+        }
+        console.log(my_sample);
+        yList = my_sample.map(function (a) {
+            return a.count;
         });
-        xLabels = my_sample.map(function (a) {
-            return a.state;
+        xList = my_sample.map(function (a) {
+            return a.selected_attr;
         });
+
         const svg = d3.select('svg');
         const svgContainer = d3.select('#container');
         const svgMargin = 80;
@@ -108,12 +107,12 @@ function getDataAndDrawChart() {
 
         const xScale = d3.scaleBand()
             .range([0, svgWidth])
-            .domain(xLabels)
+            .domain(xList)
             .padding(0.35);
 
         const yScale = d3.scaleLinear()
             .range([svgHeight, 0])
-            .domain([0, d3.max(yValues)+d3.max(yValues)/10]);
+            .domain([0, d3.max(yList)+d3.max(yList)/10]);
 
         const horizontalLines = function () {
             return d3.axisLeft()
@@ -146,16 +145,16 @@ function getDataAndDrawChart() {
         barGroups.append('rect')
             .attr('class', 'bar')
             .attr('x', function(g) {
-                return xScale(g.state);  //Bar width of 20 plus 1 for padding
+                return xScale(g.selected_attr);  //Bar width of 20 plus 1 for padding
             })
             .attr('y', function (g) {
-                return yScale(g.no2_mean);
+                return yScale(g.count);
             })
             .attr('height', function (g) {
-                return svgHeight - yScale(g.no2_mean);
+                return svgHeight - yScale(g.count);
             })
             // .attr('fill',function (g) {
-            //     return d3.rgb(0,0,g.no2_mean*29);
+            //     return d3.rgb(0,0,g.count*29);
             // })
             .attr('width', xScale.bandwidth())
             .on('mouseover', function (d) {
@@ -164,20 +163,20 @@ function getDataAndDrawChart() {
                     .transition()
                     .duration(100)
                     .attr('opacity', 0.6)
-                    .attr('x', (a) => xScale(a.state) - 5)
+                    .attr('x', (a) => xScale(a.selected_attr) - 5)
                     .attr('width', xScale.bandwidth() + 10)
-                    .attr('y', (g) => yScale(g.no2_mean+d3.mean(yValues)/20))
-                    .attr('height', (g) => svgHeight - yScale(g.no2_mean+d3.mean(yValues)/20));
+                    .attr('y', (g) => yScale(g.count+d3.mean(yList)/20))
+                    .attr('height', (g) => svgHeight - yScale(g.count+d3.mean(yList)/20));
                 barGroups.append("text")
                     .attr('class', 'val') // add class to text label
                     .attr('x', function() {
-                        return xScale(d.state);
+                        return xScale(d.selected_attr);
                     })
                     .attr('y', function() {
-                        return yScale(d.no2_mean) - 20;
+                        return yScale(d.count) - 20;
                     })
                     .text(function() {
-                        return [+d.no2_mean];  // Value of the text
+                        return [+d.count];  // Value of the text
                     });
             })
             .on('mouseout', function () {
@@ -185,10 +184,10 @@ function getDataAndDrawChart() {
                     .transition()
                     .duration(100)
                     .attr('opacity', 1)
-                    .attr('x', (a) => xScale(a.state))
+                    .attr('x', (a) => xScale(a.selected_attr))
                     .attr('width', xScale.bandwidth())
-                    .attr('y', (g) => yScale(g.no2_mean))
-                    .attr('height', (g) => svgHeight - yScale(g.no2_mean));
+                    .attr('y', (g) => yScale(g.count))
+                    .attr('height', (g) => svgHeight - yScale(g.count));
                 d3.selectAll('.val')
                     .remove()
             });
@@ -199,21 +198,21 @@ function getDataAndDrawChart() {
             .attr('y', svgMargin / 2.4)
             .attr('transform', 'rotate(-90)')
             .attr('text-anchor', 'middle')
-            .text('NO2 Mean');
+            .text('Count');
 
         svg.append('text')
             .attr('class', 'label')
             .attr('x', svgWidth / 2 + svgMargin)
             .attr('y', svgHeight + svgMargin*2.5)
             .attr('text-anchor', 'middle')
-            .text('State');
+            .text(cols[selected_attribute]);
 
         svg.append('text')
             .attr('class', 'title')
             .attr('x', svgWidth / 2 + svgMargin)
             .attr('y', 40)
             .attr('text-anchor', 'middle')
-            .text('NO2 Mean by State');
+            .text('Count of each '+cols[selected_attribute]+' observed from 2010-2016');
 
         svg.style('display', 'block').style('margin', 'auto');
     });
