@@ -44,9 +44,9 @@ dropdown.selectAll("option")
     .attr('style', 'font-size:medium')
     .text(function (d) {
         if(categorical.includes(d)){
-            return '(C) ' + cols[d];
+            return '(C.V.) ' + cols[d];
         } else {
-            return '(N) ' + cols[d];
+            return '(N.V.) ' + cols[d];
         }
     });
 no2_units = 'Parts per billion';
@@ -103,7 +103,7 @@ function getDataAndDrawChart() {
             });
 
             const svg = d3.select('svg');
-            const svgContainer = d3.select('#container');
+            // const svgContainer = d3.select('#container');
             const svgMargin = 80;
             const svgHeight =700-(2*svgMargin);
             const svgWidth = 1000-(2*svgMargin);

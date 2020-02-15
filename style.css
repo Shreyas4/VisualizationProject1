@@ -10,7 +10,7 @@ body {
 div#select_box{
     width: 80%;
     margin: 0 auto;
-    padding: 20px;
+    padding: 2px;
 }
 
 select{
@@ -20,6 +20,20 @@ select{
     display: block;
     margin: 0 auto;
     font-size: medium;
+}
+
+div#legend{
+    width: 80%;
+    margin: 0 auto;
+    padding: 5px;
+}
+p{
+    position: relative;
+    font-family: 'Open Sans', sans-serif;
+    text-align-last: center;
+    display: block;
+    margin: 0 auto;
+    font-size: x-small;
 }
 
 div#layout {
