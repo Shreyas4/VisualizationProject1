@@ -7,13 +7,28 @@ body {
     font-family: 'Open Sans', sans-serif;
 }
 
+div#select_box{
+    width: 80%;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+select{
+    position: relative;
+    font-family: 'Open Sans', sans-serif;
+    text-align-last: center;
+    display: block;
+    margin: 0 auto;
+    font-size: medium;
+}
+
 div#layout {
     text-align: center;
 }
 
 div#container {
-    width: 800px;
-    height: 700px;
+    width: 1000px;
+    height: 800px;
     margin: auto;
     background-color: #2F4A6D;
 }
