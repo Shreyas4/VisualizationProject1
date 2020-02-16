@@ -113,7 +113,7 @@ function getDataAndDrawChart() {
             const color = '#117D7F';
             const colorScale = d3.scaleLinear()
                 .domain([d3.min(yList), d3.max(yList)])
-                .range([d3.rgb(color).brighter(), d3.rgb(color).darker()]);
+                .range([d3.rgb(color).darker(), d3.rgb(color).brighter()]);
 
             const horizontalLines = function () {
                 return d3.axisLeft()
@@ -132,8 +132,6 @@ function getDataAndDrawChart() {
                 .call(d3.axisBottom(xScale))
                 .selectAll("text")
                 .style("text-anchor", "end")
-                // .attr("dx", "-.8em")
-                // .attr("dy", ".15em")
                 .attr("transform", "rotate("+rotateBy+")");
 
             chart.append('g')
@@ -251,7 +249,6 @@ function getDataAndDrawChart() {
                 yList.push(filteredData[i][selected_attribute]);
             }
 
-            console.log(selected_attribute, yList);
             const minVal = d3.min(yList);
             const maxVal = d3.max(yList);
 
@@ -278,7 +275,7 @@ function getDataAndDrawChart() {
 
                 const colorScale = d3.scaleLinear()
                     .domain([yMin, yMax])
-                    .range([d3.rgb(color).brighter(), d3.rgb(color).darker()]);
+                    .range([d3.rgb(color).darker(), d3.rgb(color).brighter()]);
 
                 const yScale = d3.scaleLinear()
                     .domain([0, yMax])
