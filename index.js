@@ -6,24 +6,24 @@ var cols = {
     'O3_1st_Max_Hour':'Hour of maximum O3 /day',
     'SO2_1st_Max_Hour':'Hour of maximum SO2 /day',
     'CO_1st_Max_Hour':'Hour of maximum CO /day',
-    'NO2_Mean':'Mean NO2 value (Parts per billion)',
-    'NO2_1st_Max_Value':'Maximum NO2 value /day (Parts per billion)',
-    'NO2_AQI':'NO2 Air Quality Index',
+    'CO_Mean':'Mean CO value (Parts per million)',
+    'CO_1st_Max_Value':'Maximum CO value /day (Parts per million)',
+    'CO_AQI':'CO Air Quality Index',
+    'Physically Unhealthy Days':'Average number of reported physically unhealthy days per month',
+    // 'NO2_Mean':'Mean NO2 value (Parts per billion)',
+    // 'NO2_1st_Max_Value':'Maximum NO2 value /day (Parts per billion)',
+    // 'NO2_AQI':'NO2 Air Quality Index',
     'O3_Mean':'Mean O3 value (Parts per million)',
     'O3_1st_Max_Value':'Maximum O3 value /day (Parts per million)',
     'O3_AQI':'O3 Air Quality Index',
-    'SO2_Mean':'Mean O3 value (Parts per billion)',
-    'SO2_1st_Max_Value':'Maximum O3 value /day (Parts per billion)',
-    'SO2_AQI':'SO2 Air Quality Index',
-    'CO_Mean':'Mean O3 value (Parts per million)',
-    'CO_1st_Max_Value':'Maximum O3 value /day (Parts per million)',
-    'CO_AQI':'CO Air Quality Index',
+    // 'SO2_Mean':'Mean SO2 value (Parts per billion)',
+    // 'SO2_1st_Max_Value':'Maximum SO2 value /day (Parts per billion)',
+    // 'SO2_AQI':'SO2 Air Quality Index',
     'YPLL Rate':'Years of Potential Life Lost Rate (Age-adjusted per 100,000)',
-    '% Fair/Poor': 'Percent of adults that report fair or poor health',
-    'Physically Unhealthy Days':'Average number of reported physically unhealthy days per month',
+    // '% Fair/Poor': 'Percent of adults that report fair or poor health',
     'TotalPop':'Total Population Affected',
-    'TotalMalePop':'Total Male Population Affected',
-    'TotalFemalePop':'Total Female Population Affected'
+    // 'TotalMalePop':'Total Male Population Affected',
+    // 'TotalFemalePop':'Total Female Population Affected'
 };
 
 var categorical = ['State', 'County', 'Year', 'NO2_1st_Max_Hour', 'O3_1st_Max_Hour', 'SO2_1st_Max_Hour', 'CO_1st_Max_Hour'];
@@ -114,7 +114,7 @@ function getDataAndDrawChart() {
             const yScale = d3.scaleLinear()
                 .range([svgHeight, 0])
                 .domain([0, d3.max(yList)+d3.max(yList)/10]);
-            const color = '#0B3739';
+            const color = '#117D7F';
             const colorScale = d3.scaleLinear()
                 .domain([d3.min(yList), d3.max(yList)])
                 .range([d3.rgb(color).brighter(), d3.rgb(color).darker()]);
@@ -244,7 +244,7 @@ function getDataAndDrawChart() {
                 .domain([minVal, maxVal])
                 .range([0, svgWidth]);
 
-            const color = '#0B3739';
+            const color = '#117D7F';
 
             const histData = d3.histogram()
                 .thresholds(xScale.ticks(nBins))
