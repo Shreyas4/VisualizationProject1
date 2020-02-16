@@ -6,10 +6,12 @@ var cols = {
     'O3_1st_Max_Hour':'Hour of maximum O3 /day',
     'SO2_1st_Max_Hour':'Hour of maximum SO2 /day',
     'CO_1st_Max_Hour':'Hour of maximum CO /day',
+    'Physically Unhealthy Days':'Average physically unhealthy days per month',
     'CO_Mean':'Mean CO value (Parts per million)',
     'CO_1st_Max_Value':'Maximum CO value /day (Parts per million)',
     'CO_AQI':'CO Air Quality Index',
-    'Physically Unhealthy Days':'Average number of reported physically unhealthy days per month',
+    'YPLL Rate':'Years of Potential Life Lost (/100,000)',
+    'TotalPop':'Total Population Affected',
     // 'NO2_Mean':'Mean NO2 value (Parts per billion)',
     // 'NO2_1st_Max_Value':'Maximum NO2 value /day (Parts per billion)',
     // 'NO2_AQI':'NO2 Air Quality Index',
@@ -19,9 +21,7 @@ var cols = {
     // 'SO2_Mean':'Mean SO2 value (Parts per billion)',
     // 'SO2_1st_Max_Value':'Maximum SO2 value /day (Parts per billion)',
     // 'SO2_AQI':'SO2 Air Quality Index',
-    'YPLL Rate':'Years of Potential Life Lost Rate (Age-adjusted per 100,000)',
     // '% Fair/Poor': 'Percent of adults that report fair or poor health',
-    'TotalPop':'Total Population Affected',
     // 'TotalMalePop':'Total Male Population Affected',
     // 'TotalFemalePop':'Total Female Population Affected'
 };
@@ -124,14 +124,21 @@ function getDataAndDrawChart() {
                     .scale(yScale)
             };
 
+            var rotateBy = '0';
+            var xLabelPosition = 1.7;
+            if (selected_attribute==='State' || selected_attribute==='County') {
+                rotateBy = '-65';
+                xLabelPosition = 2.3;
+            }
+
             chart.append('g')
                 .attr('transform', 'translate(0,'+svgHeight+')')
                 .call(d3.axisBottom(xScale))
                 .selectAll("text")
                 .style("text-anchor", "end")
-                .attr("dx", "-.8em")
-                .attr("dy", ".15em")
-                .attr("transform", "rotate(-65)");
+                // .attr("dx", "-.8em")
+                // .attr("dy", ".15em")
+                .attr("transform", "rotate("+rotateBy+")");
 
             chart.append('g')
                 .call(d3.axisLeft(yScale));
@@ -165,10 +172,16 @@ function getDataAndDrawChart() {
                         .transition()
                         .duration(100)
                         .attr('opacity', 0.6)
-                        .attr('x', (a) => xScale(a.selected_attr) - 5)
+                        .attr('x', function (a) {
+                            return xScale(a.selected_attr) - 5;
+                        })
                         .attr('width', xScale.bandwidth() + 10)
-                        .attr('y', (g) => yScale(g.count+d3.mean(yList)/20))
-                        .attr('height', (g) => svgHeight - yScale(g.count+d3.mean(yList)/20));
+                        .attr('y', function (g) {
+                            return yScale(g.count+d3.mean(yList)/20);
+                        })
+                        .attr('height', function (g) {
+                            return svgHeight - yScale(g.count+d3.mean(yList)/20);
+                        });
                     barGroups.append("text")
                         .attr('class', 'val')
                         .attr('x', function() {
@@ -186,10 +199,16 @@ function getDataAndDrawChart() {
                         .transition()
                         .duration(100)
                         .attr('opacity', 1)
-                        .attr('x', (a) => xScale(a.selected_attr))
+                        .attr('x', function (a) {
+                            return xScale(a.selected_attr);
+                        })
                         .attr('width', xScale.bandwidth())
-                        .attr('y', (g) => yScale(g.count))
-                        .attr('height', (g) => svgHeight - yScale(g.count));
+                        .attr('y', function (g) {
+                            return yScale(g.count);
+                        })
+                        .attr('height', function (g) {
+                            return svgHeight - yScale(g.count);
+                        });
                     d3.selectAll('.val')
                         .remove()
                 });
@@ -205,7 +224,7 @@ function getDataAndDrawChart() {
             svg.append('text')
                 .attr('class', 'label')
                 .attr('x', svgWidth / 2 + svgMargin)
-                .attr('y', svgHeight + svgMargin*2.5)
+                .attr('y', svgHeight + svgMargin*xLabelPosition)
                 .attr('text-anchor', 'middle')
                 .text(cols[selected_attribute]);
 
@@ -336,7 +355,7 @@ function getDataAndDrawChart() {
             svg.append('text')
                 .attr('class', 'label')
                 .attr('x', svgWidth / 2 + svgMargin)
-                .attr('y', svgHeight + svgMargin*2.5)
+                .attr('y', svgHeight + svgMargin*1.7)
                 .attr('text-anchor', 'middle')
                 .text(cols[selected_attribute]);
 
