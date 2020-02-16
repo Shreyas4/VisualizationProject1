@@ -351,14 +351,6 @@ function getDataAndDrawChart() {
 
             var dragHandler = d3.drag()
                 .on("drag", function () {
-                    // console.log(d3.event.dx)
-                    // nBins = parseInt(Math.abs(1000-(d3.event.x))/100)*2;
-                    // if (nBins===0){
-                    //     nBins = 1;
-                    // } else if (nBins>50) {
-                    //     nBins = 50;
-                    // }
-                    // console.log(nBins);
                     nBins -= (d3.event.dx/10);
                     const histData = d3.histogram()
                         .thresholds(xScale.ticks(nBins))
