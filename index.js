@@ -2,28 +2,28 @@ var cols = {
     'State':'State',
     'County':'County',
     'Year':'Year',
-    'NO2_Mean':'Mean NO2 value',
-    'NO2_1st_Max_Value':'Maximum NO2 value /day',
     'NO2_1st_Max_Hour':'Hour of maximum NO2 /day',
+    'O3_1st_Max_Hour':'Hour of maximum O3 /day',
+    'SO2_1st_Max_Hour':'Hour of maximum SO2 /day',
+    'CO_1st_Max_Hour':'Hour of maximum CO /day',
+    // 'NO2_Mean':'Mean NO2 value',
+    'NO2_1st_Max_Value':'Maximum NO2 value /day',
     'NO2_AQI':'NO2 Air Quality Index',
     'O3_Mean':'Mean O3 value',
     'O3_1st_Max_Value':'Maximum O3 value /day',
-    'O3_1st_Max_Hour':'Hour of maximum O3 /day',
     'O3_AQI':'O3 Air Quality Index',
     'SO2_Mean':'Mean O3 value',
     'SO2_1st_Max_Value':'Maximum O3 value /day',
-    'SO2_1st_Max_Hour':'Hour of maximum O3 /day',
     'SO2_AQI':'SO2 Air Quality Index',
     'CO_Mean':'Mean O3 value',
     'CO_1st_Max_Value':'Maximum O3 value /day',
-    'CO_1st_Max_Hour':'Hour of maximum O3 /day',
     'CO_AQI':'CO Air Quality Index',
     'YPLL Rate':'Years of Potential Life Lost Rate (Age-adjusted per 100,000)',
     '% Fair/Poor': 'Percent of adults that report fair or poor health',
     'Physically Unhealthy Days':'Average number of reported physically unhealthy days per month',
-    'TotalPop':'Total Population',
-    'TotalMalePop':'Total Male Population',
-    'TotalFemalePop':'Total Female Population'
+    'TotalPop':'Total Population Affected',
+    'TotalMalePop':'Total Male Population Affected',
+    'TotalFemalePop':'Total Female Population Affected'
 };
 
 var categorical = ['State', 'County', 'Year', 'NO2_1st_Max_Hour', 'O3_1st_Max_Hour', 'SO2_1st_Max_Hour', 'CO_1st_Max_Hour'];
@@ -49,10 +49,10 @@ dropdown.selectAll("option")
             return '(N.V.) ' + cols[d];
         }
     });
-no2_units = 'Parts per billion';
-o3_units = 'Parts per million';
-co_units = o3_units;
-so2_units = no2_units;
+var no2_units = 'Parts per billion';
+var o3_units = 'Parts per million';
+var co_units = o3_units;
+var so2_units = no2_units;
 
 function getDataAndDrawChart() {
     var attr_select = document.getElementById("dropdown");
@@ -63,22 +63,20 @@ function getDataAndDrawChart() {
     var xList = [];
     if (categorical.includes(selected_attribute)){
         d3.csv("VisData.csv").then(function (data) {
-            var filteredDataByDate = data.filter(function(d, i){
-                return d[selected_attribute];
+            var filteredData = data.filter(function(d){
+                return d;
             });
 
-
-            length = filteredDataByDate.length;
+            length = filteredData.length;
             var dataMap = {};
             for (i=0; i<length; i++){
-                if (!xList.includes(filteredDataByDate[i][selected_attribute])){
-                    xList.push(filteredDataByDate[i][selected_attribute]);
-                    dataMap[filteredDataByDate[i][selected_attribute]] = 1;
+                if (!xList.includes(filteredData[i][selected_attribute])){
+                    xList.push(filteredData[i][selected_attribute]);
+                    dataMap[filteredData[i][selected_attribute]] = 1;
                 } else {
-                    dataMap[filteredDataByDate[i][selected_attribute]] += 1;
+                    dataMap[filteredData[i][selected_attribute]] += 1;
                 }
             }
-            console.log(dataMap);
             for (var key in dataMap){
                 yList.push(dataMap[key]);
             }
@@ -94,7 +92,6 @@ function getDataAndDrawChart() {
                 my_sample = my_sample.slice(0,12);
                 add_clause = ' (Top 12)'
             }
-            console.log(my_sample);
             yList = my_sample.map(function (a) {
                 return a.count;
             });
@@ -103,7 +100,6 @@ function getDataAndDrawChart() {
             });
 
             const svg = d3.select('svg');
-            // const svgContainer = d3.select('#container');
             const svgMargin = 80;
             const svgHeight =700-(2*svgMargin);
             const svgWidth = 1000-(2*svgMargin);
@@ -118,6 +114,10 @@ function getDataAndDrawChart() {
             const yScale = d3.scaleLinear()
                 .range([svgHeight, 0])
                 .domain([0, d3.max(yList)+d3.max(yList)/10]);
+            const color = '#0B3739';
+            const colorScale = d3.scaleLinear()
+                .domain([d3.min(yList), d3.max(yList)])
+                .range([d3.rgb(color).brighter(), d3.rgb(color).darker()]);
 
             const horizontalLines = function () {
                 return d3.axisLeft()
@@ -158,12 +158,9 @@ function getDataAndDrawChart() {
                 .attr('height', function (g) {
                     return svgHeight - yScale(g.count);
                 })
-                // .attr('fill',function (g) {
-                //     return d3.rgb(0,0,g.count*29);
-                // })
                 .attr('width', xScale.bandwidth())
+                .attr('fill', function(d) { return colorScale(d.count) })
                 .on('mouseover', function (d) {
-                    // var translate = d3.transform(d3.select(this.parentNode).attr("transform")).translate;
                     d3.select(this)
                         .transition()
                         .duration(100)
@@ -173,7 +170,7 @@ function getDataAndDrawChart() {
                         .attr('y', (g) => yScale(g.count+d3.mean(yList)/20))
                         .attr('height', (g) => svgHeight - yScale(g.count+d3.mean(yList)/20));
                     barGroups.append("text")
-                        .attr('class', 'val') // add class to text label
+                        .attr('class', 'val')
                         .attr('x', function() {
                             return xScale(d.selected_attr);
                         })
@@ -181,7 +178,7 @@ function getDataAndDrawChart() {
                             return yScale(d.count) - 20;
                         })
                         .text(function() {
-                            return [+d.count];  // Value of the text
+                            return [+d.count];
                         });
                 })
                 .on('mouseout', function () {
@@ -220,6 +217,156 @@ function getDataAndDrawChart() {
                 .text('Frequency of each '+cols[selected_attribute]+' observed from 2010-2016'+add_clause);
 
             svg.style('display', 'block').style('margin', 'auto');
+        });
+    } else {
+        const svg = d3.select('svg');
+        const svgMargin = 80;
+        const svgHeight =700-(2*svgMargin);
+        const svgWidth = 1000-(2*svgMargin);
+        const chart = svg.append('g')
+            .attr('transform', 'translate('+svgMargin+','+svgMargin+')');
+
+        d3.csv("VisData.csv").then(function (data) {
+            var filteredData = data.filter(function(d){
+                return d;
+            });
+            yList = [];
+            length = filteredData.length;
+            for (let i=0; i<length; i++) {
+                yList.push(filteredData[i][selected_attribute]);
+            }
+
+            console.log(selected_attribute, yList);
+            const minVal = d3.min(yList);
+            const maxVal = d3.max(yList);
+
+            const xScale = d3.scaleLinear()
+                .domain([minVal, maxVal])
+                .range([0, svgWidth]);
+
+            const color = '#0B3739';
+
+            const histData = d3.histogram()
+                .thresholds(xScale.ticks(20))
+                (yList);
+
+            function updateChart(histData){
+
+                chart.append('g')
+                    .attr('transform', 'translate(0,'+svgHeight+')')
+                    .call(d3.axisBottom(xScale))
+                    .selectAll("text")
+                    .style("text-anchor", "end");
+
+                const yMin = d3.min(histData, function(d){return d.length});
+                const yMax = d3.max(histData, function(d){return d.length});
+
+                const colorScale = d3.scaleLinear()
+                    .domain([yMin, yMax])
+                    .range([d3.rgb(color).brighter(), d3.rgb(color).darker()]);
+
+                const yScale = d3.scaleLinear()
+                    .domain([0, yMax])
+                    .range([svgHeight, 0]);
+
+                chart.append('g')
+                    .call(d3.axisLeft(yScale));
+
+                const horizontalLines = function () {
+                    return d3.axisLeft()
+                        .scale(yScale)
+                };
+
+                chart.append('g')
+                    .attr('class', 'grid')
+                    .call(horizontalLines()
+                        .tickSize(-svgWidth, 0, 0)
+                        .tickFormat(''));
+
+                const barGroups = chart.selectAll()
+                    .data(histData)
+                    .enter()
+                    .append('g');
+
+                barGroups.append('rect')
+                    .attr('class', 'bar')
+                    .attr("transform", function(d) {
+                        return "translate(" + xScale(d.x0) + "," + yScale(d.length) + ")"; })
+                    .attr("x", 1)
+                    .attr("width", (xScale(histData[0].x1-histData[0].x0) - xScale(0)) - 1)
+                    .attr("height", function(d) { return svgHeight - yScale(d.length); })
+                    .attr("fill", function(d) { return colorScale(d.length) })
+                    .on('mouseover', function (d) {
+                        d3.select(this)
+                            .transition()
+                            .duration(100)
+                            .attr('opacity', 0.6);
+                        barGroups.append("text")
+                            .attr('class', 'val')
+                            .attr('x', function() {
+                                return xScale(d.x0)+5;
+                            })
+                            .attr('y', function() {
+                                return yScale(d.length) - 10;
+                            })
+                            .text(function() {
+                                return [+d.length];
+                            });
+                    })
+                    .on('mouseout', function () {
+                        d3.select(this)
+                            .transition()
+                            .duration(100)
+                            .attr('opacity', 1);
+                        d3.selectAll('.val')
+                            .remove()
+                    });
+            }
+
+            updateChart(histData);
+
+            svg.append('text')
+                .attr('class', 'label')
+                .attr('x', - (svgHeight / 2) - svgMargin)
+                .attr('y', svgMargin / 2.4)
+                .attr('transform', 'rotate(-90)')
+                .attr('text-anchor', 'middle')
+                .text('Frequency distribution');
+
+            svg.append('text')
+                .attr('class', 'label')
+                .attr('x', svgWidth / 2 + svgMargin)
+                .attr('y', svgHeight + svgMargin*2.5)
+                .attr('text-anchor', 'middle')
+                .text(cols[selected_attribute]);
+
+            svg.append('text')
+                .attr('class', 'title')
+                .attr('x', svgWidth / 2 + svgMargin)
+                .attr('y', 40)
+                .attr('text-anchor', 'middle')
+                .text('Histogram of '+cols[selected_attribute]+' in the period 2010-2016');
+
+            svg.style('display', 'block').style('margin', 'auto');
+
+            var dragHandler = d3.drag()
+                .on("drag", function () {
+                    nBins = parseInt(Math.abs(1000-(d3.event.x))/100)*2;
+                    if (nBins===0){
+                        nBins = 1;
+                    } else if (nBins>25) {
+                        nBins = 25
+                    }
+                    console.log(nBins);
+                    const histData = d3.histogram()
+                        .thresholds(xScale.ticks(nBins))
+                        (yList);
+                    chart.selectAll('g').remove();
+                    updateChart(histData);
+
+                });
+            dragHandler(svg);
+
         });
     }
 }
