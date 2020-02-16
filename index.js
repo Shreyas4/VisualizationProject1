@@ -49,10 +49,6 @@ dropdown.selectAll("option")
             return '(N.V.) ' + cols[d];
         }
     });
-var no2_units = 'Parts per billion';
-var o3_units = 'Parts per million';
-var co_units = o3_units;
-var so2_units = no2_units;
 
 function getDataAndDrawChart() {
     var attr_select = document.getElementById("dropdown");
