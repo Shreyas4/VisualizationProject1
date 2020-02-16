@@ -225,7 +225,7 @@ function getDataAndDrawChart() {
         const svgWidth = 1000-(2*svgMargin);
         const chart = svg.append('g')
             .attr('transform', 'translate('+svgMargin+','+svgMargin+')');
-
+        let nBins = 20;
         d3.csv("VisData.csv").then(function (data) {
             var filteredData = data.filter(function(d){
                 return d;
@@ -247,7 +247,7 @@ function getDataAndDrawChart() {
             const color = '#0B3739';
 
             const histData = d3.histogram()
-                .thresholds(xScale.ticks(20))
+                .thresholds(xScale.ticks(nBins))
                 (yList);
 
             function updateChart(histData){
@@ -351,13 +351,15 @@ function getDataAndDrawChart() {
 
             var dragHandler = d3.drag()
                 .on("drag", function () {
-                    nBins = parseInt(Math.abs(1000-(d3.event.x))/100)*2;
-                    if (nBins===0){
-                        nBins = 1;
-                    } else if (nBins>25) {
-                        nBins = 25
-                    }
-                    console.log(nBins);
+                    // console.log(d3.event.dx)
+                    // nBins = parseInt(Math.abs(1000-(d3.event.x))/100)*2;
+                    // if (nBins===0){
+                    //     nBins = 1;
+                    // } else if (nBins>50) {
+                    //     nBins = 50;
+                    // }
+                    // console.log(nBins);
+                    nBins -= (d3.event.dx/10);
                     const histData = d3.histogram()
                         .thresholds(xScale.ticks(nBins))
                         (yList);
